@@ -21,8 +21,8 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <script type="module" src="./assets/index-BM6FjTK8.js"></script>
-    <link rel="stylesheet" href="./assets/index-Dq-OlvmM.css">
+    <script type="module" src="./assets/index-x14El6Uu.js"></script>
+    <link rel="stylesheet" href="./assets/index-BnSI7MSS.css">
   </head>
   <body class="bg-[#0F172A] text-[#F8FAFC] antialiased selection:bg-amber-500/30 selection:text-amber-100" style="background-color:#0F172A;color:#F8FAFC;">
     <div id="root"></div>
@@ -60,7 +60,9 @@
           var t = ev && ev.target;
           if (t && t.tagName === 'SCRIPT' && t.src) {
             if (t.src.indexOf('/src/main.tsx') !== -1 && window.location.pathname.indexOf('/docs') === -1 && window.location.search.indexOf('no_docs=1') === -1) {
-              window.location.replace('./docs/');
+              var p = window.location.pathname || '/';
+              var base = p.slice(-1) === '/' ? p : (p.slice(-11) === '/index.html' ? p.slice(0, -10) : p + '/');
+              window.location.replace(base + 'docs/');
               return;
             }
             showBootError('gagal memuatkan ' + t.src);
