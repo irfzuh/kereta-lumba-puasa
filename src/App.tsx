@@ -402,7 +402,7 @@ export default function App() {
   const isLockedViewport = navView === 'arena' && (gameState === 'PLAYING' || gameState === 'TITLE_MENU');
 
   return (
-    <div className="h-dvh max-h-screen flex flex-col overflow-hidden bg-[#0F172A] text-[#F8FAFC]">
+    <div className="h-screen supports-[height:100dvh]:h-dvh max-h-screen flex flex-col overflow-hidden bg-[#0F172A] text-[#F8FAFC]">
       {/* Compact 44px 3-Zone Top Bar (Single row across all devices for 500px Jotform fit) */}
       <header className="h-11 shrink-0 border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-sm z-30">
         <div className="max-w-[1200px] h-full mx-auto px-3 sm:px-5 flex items-center justify-between gap-4 sm:gap-8">

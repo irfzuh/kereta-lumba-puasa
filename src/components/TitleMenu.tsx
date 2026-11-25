@@ -15,7 +15,7 @@ interface TitleMenuProps {
   onStartRace: () => void;
 }
 
-const HERO_IMAGE_PATH = '/src/assets/images/ramadan_desert_hero_1795543663301.jpg';
+const HERO_IMAGE_PATH = './src/assets/images/ramadan_desert_hero_1795543663301.jpg';
 
 const DIFFICULTIES: { id: Difficulty; label: string; desc: string }[] = [
   { id: 'easy', label: 'Santai', desc: 'AI 52 km/j' },

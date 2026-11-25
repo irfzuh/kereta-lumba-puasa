@@ -1,7 +1,7 @@
 import { PlayerBoostStatus, VehicleType } from '../types/game';
 
 const SOUNDTRACK_PATH =
-  '/assets/aistudio/Sport_Trap_Rock_by_Infraction__No_Copyright_Music__Training_Day_94db7219.mp3';
+  './assets/aistudio/Sport_Trap_Rock_by_Infraction__No_Copyright_Music__Training_Day_94db7219.mp3';
 
 let audioCtx: AudioContext | null = null;
 

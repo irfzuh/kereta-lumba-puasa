@@ -11,7 +11,7 @@ interface LeaderboardViewProps {
   onStartRace: () => void;
 }
 
-const TROPHY_IMAGE_PATH = '/src/assets/images/ramadan_trophy_crescent_1795543663228.jpg';
+const TROPHY_IMAGE_PATH = './src/assets/images/ramadan_trophy_crescent_1795543663228.jpg';
 
 export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   entries,
