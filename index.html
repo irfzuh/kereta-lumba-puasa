@@ -24,6 +24,52 @@
   </head>
   <body class="bg-[#0F172A] text-[#F8FAFC] antialiased selection:bg-amber-500/30 selection:text-amber-100" style="background-color:#0F172A;color:#F8FAFC;">
     <div id="root"></div>
+    <script>
+      (function () {
+        var shown = false;
+        function showBootError(reason) {
+          var root = document.getElementById('root');
+          if (shown || !root || root.childElementCount > 0) return;
+          shown = true;
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#0F172A;color:#F8FAFC;';
+          var card = document.createElement('div');
+          card.style.cssText = 'max-width:440px;width:100%;background:#111827;border:1px solid #334155;border-radius:12px;padding:20px;text-align:center;';
+          var h1 = document.createElement('h1');
+          h1.style.cssText = 'font-size:18px;font-weight:700;margin:0 0 8px;';
+          h1.textContent = 'Lumba Kereta Ramadan';
+          var p = document.createElement('p');
+          p.style.cssText = 'font-size:13px;color:#CBD5E1;margin:0 0 14px;line-height:1.5;';
+          p.textContent = 'Aplikasi gagal dimuatkan (' + reason + '). Pastikan laman dibina dengan npm run build dan folder dist digunakan untuk deploy.';
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.style.cssText = 'background:#F59E0B;color:#0F172A;border:0;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;';
+          btn.textContent = 'Muat Semula';
+          btn.onclick = function () { window.location.reload(); };
+          card.appendChild(h1);
+          card.appendChild(p);
+          card.appendChild(btn);
+          wrap.appendChild(card);
+          root.appendChild(wrap);
+        }
+        window.addEventListener('error', function (ev) {
+          var root = document.getElementById('root');
+          if (!root || root.childElementCount > 0) return;
+          var t = ev && ev.target;
+          if (t && t.tagName === 'SCRIPT' && t.src) {
+            showBootError('gagal memuatkan ' + t.src);
+          } else if (ev && ev.message) {
+            showBootError(ev.message);
+          }
+        }, true);
+        window.setTimeout(function () {
+          var root = document.getElementById('root');
+          if (root && root.childElementCount === 0) {
+            showBootError('skrip utama tidak dilaksanakan');
+          }
+        }, 4000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

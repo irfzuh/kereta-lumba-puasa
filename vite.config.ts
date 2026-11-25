@@ -13,6 +13,15 @@ export default defineConfig(() => {
     plugins: [
       react(),
       tailwindcss(),
+      {
+        name: 'strip-crossorigin-for-same-origin-auth',
+        apply: 'build',
+        transformIndexHtml(html: string): string {
+          return html
+            .replace(/<script type="module" crossorigin /g, '<script type="module" ')
+            .replace(/<link rel="stylesheet" crossorigin /g, '<link rel="stylesheet" ');
+        },
+      },
       // Copies src/assets into dist/ so relative URLs like
       // "./src/assets/images/..." (e.g. generate_image output) still resolve
       // in production builds. Do not remove.
