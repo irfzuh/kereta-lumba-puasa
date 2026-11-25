@@ -17,6 +17,7 @@ let engineNodes: ContinuousEngineNodes | null = null;
 let noiseBuffer: AudioBuffer | null = null;
 let lastHoofTimestamp = 0;
 let bgMusicAudio: HTMLAudioElement | null = null;
+let sfxBusNode: DynamicsCompressorNode | null = null;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -34,13 +35,27 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
+function getSfxDestination(ctx: AudioContext): AudioNode {
+  if (!sfxBusNode || sfxBusNode.context !== ctx) {
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-14, ctx.currentTime);
+    comp.knee.setValueAtTime(12, ctx.currentTime);
+    comp.ratio.setValueAtTime(6, ctx.currentTime);
+    comp.attack.setValueAtTime(0.003, ctx.currentTime);
+    comp.release.setValueAtTime(0.15, ctx.currentTime);
+    comp.connect(ctx.destination);
+    sfxBusNode = comp;
+  }
+  return sfxBusNode;
+}
+
 function getBackgroundTrack(): HTMLAudioElement | null {
   if (typeof window === 'undefined' || typeof Audio === 'undefined') return null;
   if (!bgMusicAudio) {
     bgMusicAudio = new Audio(SOUNDTRACK_PATH);
     bgMusicAudio.loop = true;
     bgMusicAudio.preload = 'auto';
-    bgMusicAudio.volume = 0.42;
+    bgMusicAudio.volume = 0.15;
   }
   return bgMusicAudio;
 }
@@ -70,7 +85,7 @@ function updateBackgroundTrack(enabled: boolean, boostStatus: PlayerBoostStatus)
     return;
   }
 
-  const targetVol = boostStatus === 'nitro' ? 0.55 : boostStatus === 'stopped' ? 0.28 : 0.42;
+  const targetVol = boostStatus === 'nitro' ? 0.2 : boostStatus === 'stopped' ? 0.1 : 0.15;
   track.volume = targetVol;
 
   if (track.paused) {
@@ -117,7 +132,7 @@ function ensureCarEngineNodes(ctx: AudioContext): ContinuousEngineNodes {
   subGain.connect(filter);
 
   filter.connect(masterGain);
-  masterGain.connect(ctx.destination);
+  masterGain.connect(getSfxDestination(ctx));
 
   osc1.start();
   osc2.start();
@@ -143,13 +158,13 @@ export function playUiClick(muted: boolean = false): void {
   osc.frequency.exponentialRampToValueAtTime(360, now + 0.055);
 
   gain.gain.setValueAtTime(0.001, now);
-  gain.gain.linearRampToValueAtTime(0.075, now + 0.008);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+  gain.gain.linearRampToValueAtTime(0.22, now + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
 
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(getSfxDestination(ctx));
   osc.start(now);
-  osc.stop(now + 0.065);
+  osc.stop(now + 0.07);
 }
 
 export function playUiSelect(muted: boolean = false): void {
@@ -167,13 +182,13 @@ export function playUiSelect(muted: boolean = false): void {
     osc.frequency.setValueAtTime(freq, t);
 
     gain.gain.setValueAtTime(0.001, t);
-    gain.gain.linearRampToValueAtTime(0.07, t + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.075);
+    gain.gain.linearRampToValueAtTime(0.2, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
 
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getSfxDestination(ctx));
     osc.start(t);
-    osc.stop(t + 0.08);
+    osc.stop(t + 0.085);
   });
 }
 
@@ -191,13 +206,13 @@ export function playUiToggle(muted: boolean = false, active: boolean = true): vo
   osc.frequency.exponentialRampToValueAtTime(active ? 760 : 380, now + 0.07);
 
   gain.gain.setValueAtTime(0.001, now);
-  gain.gain.linearRampToValueAtTime(0.07, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+  gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
 
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(getSfxDestination(ctx));
   osc.start(now);
-  osc.stop(now + 0.085);
+  osc.stop(now + 0.09);
 }
 
 // --- Race & Vehicle Audio ---
@@ -254,11 +269,11 @@ export function playCamelHoofStep(muted: boolean, isNitro: boolean): void {
   osc.frequency.exponentialRampToValueAtTime(48, now + 0.085);
 
   thudGain.gain.setValueAtTime(0.001, now);
-  thudGain.gain.linearRampToValueAtTime(isNitro ? 0.14 : 0.1, now + 0.01);
+  thudGain.gain.linearRampToValueAtTime(isNitro ? 0.36 : 0.28, now + 0.01);
   thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
 
   osc.connect(thudGain);
-  thudGain.connect(ctx.destination);
+  thudGain.connect(getSfxDestination(ctx));
   osc.start(now);
   osc.stop(now + 0.11);
 
@@ -270,12 +285,12 @@ export function playCamelHoofStep(muted: boolean, isNitro: boolean): void {
   bandpass.Q.setValueAtTime(1.4, now);
 
   const sandGain = ctx.createGain();
-  sandGain.gain.setValueAtTime(isNitro ? 0.055 : 0.035, now);
+  sandGain.gain.setValueAtTime(isNitro ? 0.16 : 0.11, now);
   sandGain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
 
   src.connect(bandpass);
   bandpass.connect(sandGain);
-  sandGain.connect(ctx.destination);
+  sandGain.connect(getSfxDestination(ctx));
   src.start(now);
   src.stop(now + 0.07);
 }
@@ -311,7 +326,7 @@ export function updateRaceAudio(params: {
 
     const baseFreq = isStopped ? 38 : 48 + speed * 0.52 + (isNitro ? 18 : 0);
     const cutoff = isStopped ? 110 : isNitro ? 540 : 210 + speed * 1.4;
-    const targetVol = isStopped ? 0.012 : isNitro ? 0.075 : 0.042;
+    const targetVol = isStopped ? 0.035 : isNitro ? 0.19 : 0.12;
 
     nodes.osc1.frequency.setTargetAtTime(baseFreq, now, 0.08);
     nodes.osc2.frequency.setTargetAtTime(baseFreq * 1.98, now, 0.08);
@@ -348,14 +363,14 @@ export function playCarExhaustNitroBurst(muted: boolean): void {
 
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.001, now);
-  gain.gain.linearRampToValueAtTime(0.16, now + 0.05);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+  gain.gain.linearRampToValueAtTime(0.38, now + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
   src.connect(filter);
   filter.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(getSfxDestination(ctx));
   src.start(now);
-  src.stop(now + 0.5);
+  src.stop(now + 0.52);
 }
 
 export function playCorrectNitro(muted: boolean, vehicle: VehicleType = 'car'): void {
@@ -378,12 +393,12 @@ export function playCorrectNitro(muted: boolean, vehicle: VehicleType = 'car'): 
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(freq, now + idx * 0.055);
     gain.gain.setValueAtTime(0.001, now + idx * 0.055);
-    gain.gain.exponentialRampToValueAtTime(0.095, now + idx * 0.055 + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.18);
+    gain.gain.exponentialRampToValueAtTime(0.24, now + idx * 0.055 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.19);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getSfxDestination(ctx));
     osc.start(now + idx * 0.055);
-    osc.stop(now + idx * 0.055 + 0.2);
+    osc.stop(now + idx * 0.055 + 0.21);
   });
 }
 
@@ -398,12 +413,12 @@ export function playWrongBrake(muted: boolean): void {
   osc.type = 'sawtooth';
   osc.frequency.setValueAtTime(220, now);
   osc.frequency.exponentialRampToValueAtTime(85, now + 0.28);
-  gain.gain.setValueAtTime(0.09, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+  gain.gain.setValueAtTime(0.26, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(getSfxDestination(ctx));
   osc.start(now);
-  osc.stop(now + 0.32);
+  osc.stop(now + 0.34);
 }
 
 export function playStartRace(
@@ -415,7 +430,7 @@ export function playStartRace(
     const track = getBackgroundTrack();
     if (track) {
       track.currentTime = 0;
-      track.volume = 0.42;
+      track.volume = 0.15;
       track.play().catch(() => {});
     }
   }
@@ -430,12 +445,12 @@ export function playStartRace(
     const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, now + i * 0.08);
-    gain.gain.setValueAtTime(0.08, now + i * 0.08);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.16);
+    gain.gain.setValueAtTime(0.22, now + i * 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.18);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getSfxDestination(ctx));
     osc.start(now + i * 0.08);
-    osc.stop(now + i * 0.08 + 0.18);
+    osc.stop(now + i * 0.08 + 0.2);
   });
 
   if (vehicle === 'car') {
@@ -457,12 +472,12 @@ export function playVictory(muted: boolean): void {
     const gain = ctx.createGain();
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(freq, now + idx * 0.09);
-    gain.gain.setValueAtTime(0.11, now + idx * 0.09);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.32);
+    gain.gain.setValueAtTime(0.28, now + idx * 0.09);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.34);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getSfxDestination(ctx));
     osc.start(now + idx * 0.09);
-    osc.stop(now + idx * 0.09 + 0.35);
+    osc.stop(now + idx * 0.09 + 0.36);
   });
 }
 
@@ -477,11 +492,11 @@ export function playDefeat(muted: boolean): void {
     const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, now + idx * 0.14);
-    gain.gain.setValueAtTime(0.09, now + idx * 0.14);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.14 + 0.28);
+    gain.gain.setValueAtTime(0.24, now + idx * 0.14);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.14 + 0.3);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getSfxDestination(ctx));
     osc.start(now + idx * 0.14);
-    osc.stop(now + idx * 0.14 + 0.3);
+    osc.stop(now + idx * 0.14 + 0.32);
   });
 }
