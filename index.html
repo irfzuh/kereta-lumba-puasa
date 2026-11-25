@@ -57,6 +57,10 @@
           if (!root || root.childElementCount > 0) return;
           var t = ev && ev.target;
           if (t && t.tagName === 'SCRIPT' && t.src) {
+            if (t.src.indexOf('/src/main.tsx') !== -1 && window.location.pathname.indexOf('/docs') === -1 && window.location.search.indexOf('no_docs=1') === -1) {
+              window.location.replace('./docs/');
+              return;
+            }
             showBootError('gagal memuatkan ' + t.src);
           } else if (ev && ev.message) {
             showBootError(ev.message);
